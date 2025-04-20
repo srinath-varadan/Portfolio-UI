@@ -27,13 +27,13 @@ jobs:
       - name: Build Vite app
         run: npm run build
 
-      - name: 📦 Upload dist as artifact
-        uses: actions/upload-artifact@v3
+      - name: Upload Vite build as artifact
+        uses: actions/upload-artifact@v3.1.2
         with:
           name: vite-dist
           path: dist
 
-      - name: 🚀 Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
