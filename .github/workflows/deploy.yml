@@ -25,7 +25,12 @@ jobs:
         run: npm ci
 
       - name: 🏗️ Build Vite app
-        run: vite build
+        run: npm run build
+
+
+      - name: ✅ List dist contents
+        run: ls -R dist
+
 
       - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
