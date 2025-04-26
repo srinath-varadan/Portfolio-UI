@@ -1,5 +1,5 @@
 // App.tsx - AG Grid + Service Fetch Integration
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import {
   ModuleRegistry,
@@ -78,11 +78,58 @@ const App: React.FC = () => {
     await saveData('api/Holding', data);
   };
 
+  const [liveStockData, setLiveStockData] = useState<any[]>([]);
+  const [streaming, setStreaming] = useState(false);
+  const stockHistory = useRef<any[]>([]);
+  const eventSourceRef = useRef<EventSource | null>(null);
+  const BACKEND_API = "https://stock-stream-api.onrender.com/stream/stocks";
+
   const deleteAssetClass = useCallback(async (id: number) => {
     await deleteData('api/Asset', id);
     setAssetClasses(prev => prev.filter(a => a.id !== id));
   }, []);
 
+  const startStreaming = async () => {
+    try {
+      await fetch(`${BACKEND_API}/start`, { method: "POST" });
+      eventSourceRef.current = new EventSource(`${BACKEND_API}/stream/stocks`);
+
+      eventSourceRef.current.onmessage = (event) => {
+        const stock = JSON.parse(event.data);
+        stockHistory.current = [...stockHistory.current.slice(-50), stock];
+        setLiveStockData([...stockHistory.current]);
+      };
+
+      eventSourceRef.current.onerror = (err) => {
+        console.error('Streaming error:', err);
+        eventSourceRef.current?.close();
+      };
+
+      setStreaming(true);
+    } catch (error) {
+      console.error("Failed to start streaming", error);
+    }
+  };
+
+  const stopStreaming = async () => {
+    try {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+      await fetch(`${BACKEND_API}/stop`, { method: "POST" });
+      setStreaming(false);
+    } catch (error) {
+      console.error("Failed to stop streaming", error);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+    };
+  }, []);
   const deleteHolding = useCallback(async (id: number) => {
     await deleteData('api/Holding', id);
     setHoldings(prev => prev.filter(h => h.id !== id));
@@ -226,6 +273,40 @@ const App: React.FC = () => {
               <Line type="monotone" dataKey="value" stroke="#8884d8" />
             </LineChart>
           </ResponsiveContainer>
+        </section>
+
+        <section className="section-box live-stocks">
+          <h2 className="section-title">Live Stock Prices</h2>
+
+          <div style={{ marginTop: "1rem" }}>
+            {!streaming ? (
+              <button
+                onClick={startStreaming}
+                style={{ backgroundColor: '#2ECC40', color: 'white', padding: '0.5rem 1rem', border: 'none', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                Start Streaming
+              </button>
+            ) : (
+              <button
+                onClick={stopStreaming}
+                style={{ backgroundColor: '#FF4136', color: 'white', padding: '0.5rem 1rem', border: 'none', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                Stop Streaming
+              </button>
+            )}
+          </div>
+
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={liveStockData}>
+              <CartesianGrid stroke="#ccc" />
+              <XAxis dataKey="timestamp" tickFormatter={(t) => new Date(t).toLocaleTimeString()} />
+              <YAxis domain={['auto', 'auto']} />
+              <Tooltip />
+              <Line type="monotone" dataKey="price" stroke="#FF5733" name="Stock Price" />
+            </LineChart>
+          </ResponsiveContainer>
+
+        
         </section>
       </div>
     </div>
