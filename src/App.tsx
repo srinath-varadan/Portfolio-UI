@@ -60,9 +60,9 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      const assets = await fetchData('assetClasses');
-      const holds = await fetchData('holdings');
-      const performance = await fetchData('performance');
+      const assets = await fetchData('api/assets');
+      const holds = await fetchData('api/holdings');
+      const performance = await fetchData('api/performance');
       setAssetClasses(assets);
       setHoldings(holds);
       setPerformanceHistory(performance);

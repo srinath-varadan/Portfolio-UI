@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://mockapi.io/portfolio'; // Replace with your actual backend URL
+const API_BASE_URL = 'https://portfolio-api-cptv.onrender.com'; // Replace with your actual backend URL
 
 // Generic GET request
 export async function fetchData(endpoint: string) {
