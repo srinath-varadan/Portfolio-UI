@@ -60,9 +60,9 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      const assets = await fetchData('api/assets');
-      const holds = await fetchData('api/holdings');
-      const performance = await fetchData('api/performance');
+      const assets = await fetchData('api/Asset');
+      const holds = await fetchData('api/Holding');
+      const performance = await fetchData('api/Performance');
       setAssetClasses(assets);
       setHoldings(holds);
       setPerformanceHistory(performance);
@@ -71,20 +71,20 @@ const App: React.FC = () => {
   }, []);
 
   const saveAssetClass = async (data: any) => {
-    await saveData('assetClasses', data);
+    await saveData('api/Asset', data);
   };
 
   const saveHolding = async (data: any) => {
-    await saveData('holdings', data);
+    await saveData('api/Holding', data);
   };
 
   const deleteAssetClass = useCallback(async (id: number) => {
-    await deleteData('assetClasses', id);
+    await deleteData('api/Asset', id);
     setAssetClasses(prev => prev.filter(a => a.id !== id));
   }, []);
 
   const deleteHolding = useCallback(async (id: number) => {
-    await deleteData('holdings', id);
+    await deleteData('api/Holding', id);
     setHoldings(prev => prev.filter(h => h.id !== id));
   }, []);
 
