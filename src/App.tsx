@@ -82,7 +82,7 @@ const App: React.FC = () => {
   const [streaming, setStreaming] = useState(false);
   const stockHistory = useRef<any[]>([]);
   const eventSourceRef = useRef<EventSource | null>(null);
-  const BACKEND_API = "https://stock-stream-api.onrender.com/stream/stocks";
+  const BACKEND_API = "https://stock-stream-api.onrender.com";
 
   const deleteAssetClass = useCallback(async (id: number) => {
     await deleteData('api/Asset', id);
@@ -91,7 +91,7 @@ const App: React.FC = () => {
 
   const startStreaming = async () => {
     try {
-      await fetch(`${BACKEND_API}/start`, { method: "POST" });
+      await fetch(`${BACKEND_API}/stream/stocks`, { method: "POST" });
       eventSourceRef.current = new EventSource(`${BACKEND_API}/stream/stocks`);
 
       eventSourceRef.current.onmessage = (event) => {
