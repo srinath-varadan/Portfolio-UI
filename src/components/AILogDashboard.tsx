@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { ModuleRegistry, ClientSideRowModelModule, ValidationModule, NumberFilterModule, TextEditorModule, ColumnAutoSizeModule, NumberEditorModule } from 'ag-grid-community';
 ModuleRegistry.registerModules([
@@ -13,17 +13,26 @@ ModuleRegistry.registerModules([
 const AILogDashboard: React.FC = () => {
   const [rowData, setRowData] = useState<any[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [filterText, setFilterText] = useState('');
   const eventSourceRef = useRef<EventSource | null>(null);
   const BACKEND_API = "https://stock-stream-api.onrender.com";
   const columnDefs = [
-    { headerName: 'Timestamp', field: 'timestamp', flex: 1 },
-    { headerName: 'Info Logs', field: 'info_logs_count', flex: 1 },
-    { headerName: 'Warnings', field: 'warning_logs_count', flex: 1 },
-    { headerName: 'Errors', field: 'error_logs_count', flex: 1 },
-    { headerName: 'Critical', field: 'critical_logs_count', flex: 1 },
-    { headerName: 'Anomaly', field: 'anomalies_detected', flex: 1 },
-    { headerName: 'Summary', field: 'summary', flex: 4 },
+    { headerName: 'Timestamp', field: 'timestamp', flex: 1},
+    { headerName: 'Info Logs', field: 'info_logs_count', flex: 1},
+    { headerName: 'Warnings', field: 'warning_logs_count', flex: 1},
+    { headerName: 'Errors', field: 'error_logs_count', flex: 1},
+    { headerName: 'Critical', field: 'critical_logs_count', flex: 1},
+    { headerName: 'Anomaly', field: 'anomalies_detected', flex: 1},
+    { headerName: 'Summary', field: 'summary', flex: 4},
   ];
+
+  const filteredData = useMemo(() => {
+    return rowData.filter(row =>
+      Object.values(row).some(value =>
+        String(value).toLowerCase().includes(filterText.toLowerCase())
+      )
+    );
+  }, [rowData, filterText]);
 
   const startStreaming = () => {
     if (eventSourceRef.current) return;
@@ -91,8 +100,30 @@ const AILogDashboard: React.FC = () => {
         {isStreaming ? 'Stop Streaming' : 'Start Streaming'}
       </button>
       </div>
+      <div style={{ marginBottom: '1rem' }}>
+        <input
+          type="text"
+          placeholder="Search logs..."
+          value={filterText}
+          onChange={(e) => setFilterText(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '0.5rem',
+            borderRadius: '5px',
+            border: '1px solid #ccc'
+          }}
+        />
+      </div>
       <div className="ag-theme-alpine" style={{ height: 600, width: '100%' }}>
-        <AgGridReact rowData={rowData} columnDefs={columnDefs} />
+        <AgGridReact
+          rowData={filteredData}
+          columnDefs={columnDefs}
+          defaultColDef={{
+            filter: true,
+            sortable: true,
+            resizable: true,
+          }}
+        />
       </div>
     </div>
   );
