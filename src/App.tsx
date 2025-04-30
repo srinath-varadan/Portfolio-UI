@@ -3,6 +3,7 @@ import ArsenalLogo from './assets/arsenal-logo.png';
 import styled from 'styled-components';
 import PortfolioDashboard from './components/PortfolioDashboard';
 import LiveMarketDashboard from './components/LiveMarketDashboard';
+import AILogDashboard from './components/AILogDashboard';
 
 const Container = styled.div`
   padding: 2rem;
@@ -27,7 +28,7 @@ const TabButton = styled.button<{ $active: boolean }>`
 `;
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'portfolio' | 'live'>('portfolio');
+  const [activeTab, setActiveTab] = useState<'portfolio' | 'live' | 'ai-logs'>('portfolio');
 
   return (
     <Container>
@@ -52,9 +53,14 @@ const App: React.FC = () => {
         <TabButton $active={activeTab === 'live'} onClick={() => setActiveTab('live')}>
           Live Market
         </TabButton>
+        <TabButton $active={activeTab === 'ai-logs'} onClick={() => setActiveTab('ai-logs')}>
+          AI Logs
+        </TabButton>
       </TabButtons>
 
-      {activeTab === 'portfolio' ? <PortfolioDashboard /> : <LiveMarketDashboard />}
+      {activeTab === 'portfolio' && <PortfolioDashboard />}
+      {activeTab === 'live' && <LiveMarketDashboard />}
+      {activeTab === 'ai-logs' && <AILogDashboard />}
     </Container>
   );
 };
