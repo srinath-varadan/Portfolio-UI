@@ -16,7 +16,7 @@ export async function fetchData(endpoint: string) {
 // Generic POST (save/create)
 export async function saveData(endpoint: string, data: any) {
   try {
-    const response = await axios.post(`${API_BASE_URL}/${endpoint}`, data);
+    const response = await axios.put(`${API_BASE_URL}/${endpoint}`, data);
     return response.data;
   } catch (error) {
     console.error(`Error saving to ${endpoint}:`, error);
