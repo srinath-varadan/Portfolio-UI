@@ -23,7 +23,7 @@ const PortfolioDashboard: React.FC = () => {
 
   // Save AssetClass
   const saveAssetClass = async (assetClass: any) => {
-    const saved = await saveData(`api/Asset?id=${assetClass.id}`, assetClass);
+    const saved = await saveData(`api/Asset/${assetClass.id}`, assetClass);
     // Optionally refresh list or update state
     setAssetClasses((prev) => {
       const idx = prev.findIndex((a: any) => a.id === saved.id);
@@ -44,7 +44,7 @@ const PortfolioDashboard: React.FC = () => {
 
   // Save Holding
   const saveHolding = async (holding: any) => {
-    const saved = await saveData(`api/Holding?id=${holding.id}`, holding);
+    const saved = await saveData(`api/Holding/${holding.id}`, holding);
     setHoldings((prev) => {
       const idx = prev.findIndex((h: any) => h.id === saved.id);
       if (idx !== -1) {
