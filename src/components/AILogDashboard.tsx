@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
+import ClipLoader from 'react-spinners/ClipLoader';
 import { AgGridReact } from 'ag-grid-react';
 import { ModuleRegistry, ClientSideRowModelModule, ValidationModule, NumberFilterModule, TextEditorModule, ColumnAutoSizeModule, NumberEditorModule } from 'ag-grid-community';
 ModuleRegistry.registerModules([
@@ -14,6 +15,7 @@ const AILogDashboard: React.FC = () => {
   const [rowData, setRowData] = useState<any[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [filterText, setFilterText] = useState('');
+  const [loading, setLoading] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
   const BACKEND_API = "https://stock-stream-api.onrender.com";
   const columnDefs = [
@@ -23,8 +25,27 @@ const AILogDashboard: React.FC = () => {
     { headerName: 'Errors', field: 'error_logs_count', flex: 1},
     { headerName: 'Critical', field: 'critical_logs_count', flex: 1},
     { headerName: 'Anomaly', field: 'anomalies_detected', flex: 1},
-    { headerName: 'Summary', field: 'summary', flex: 4},
+    { 
+      headerName: 'Summary', 
+      field: 'summary', 
+      flex: 4, 
+      autoHeight: true, 
+      cellStyle: { whiteSpace: 'normal', lineHeight: '1.4', wordBreak: 'break-word' } 
+    },
   ];
+
+  const overlayStyle = {
+    position: 'fixed' as const,
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: '100vh',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10000,
+  };
 
   const filteredData = useMemo(() => {
     return rowData.filter(row =>
@@ -37,6 +58,7 @@ const AILogDashboard: React.FC = () => {
   const startStreaming = () => {
     if (eventSourceRef.current) return;
 
+    setLoading(true);
     const source = new EventSource(`${BACKEND_API}/stream/loki`);
     eventSourceRef.current = source;
     setIsStreaming(true);
@@ -55,16 +77,19 @@ const AILogDashboard: React.FC = () => {
           log = raw.log;
         }
         setRowData((prev) => [
-          { timestamp: new Date().toISOString(), ...log },
-          ...prev.slice(0, 499),
+          { timestamp: new Date().toLocaleString(), ...log },
+          ...prev,
         ]);
+        setLoading(false);
       } catch (err) {
         console.error('Failed to parse log message:', err);
+        setLoading(false);
       }
     };
 
     source.onerror = (err) => {
       console.error('Stream error:', err);
+      setLoading(false);
       stopStreaming();
     };
   };
@@ -83,6 +108,11 @@ const AILogDashboard: React.FC = () => {
 
   return (
     <div style={{ width: '100%' }}>
+      {loading && (
+        <div style={overlayStyle}>
+          <ClipLoader size={60} color="#fff" loading={loading} />
+        </div>
+      )}
       <div style={{ marginBottom: '1rem', display: 'flex', gap: '1rem' }}>
       <button
         onClick={isStreaming ? stopStreaming : startStreaming}

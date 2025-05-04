@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, Tab, Box } from '@mui/material';
+import ClipLoader from 'react-spinners/ClipLoader';
 import TrendingStocks from './TrendingStocks';
 import TopMovers from './TopMovers';
 import CryptoTicker from './CryptoTicker';
@@ -24,6 +25,21 @@ const LiveMarketDashboard: React.FC = () => {
   const [liveStockData, setLiveStockData] = useState<any[]>([]);
   const [streaming, setStreaming] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
+
+  const [loading, setLoading] = useState(false);
+
+  const overlayStyle = {
+    position: 'fixed' as const,
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: '100vh',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10000,
+  };
 
   const startStreaming = () => {
     if (streaming) return;
@@ -64,6 +80,7 @@ const LiveMarketDashboard: React.FC = () => {
   useEffect(() => {
     const fetchMarketData = async () => {
       try {
+        setLoading(true);
         const trending = await fetch('https://financialmodelingprep.com/api/v3/stock_market/actives?apikey=q3fPr5j0KtiOFVyZqv5AMmkrWeSKPDFi').then(res => res.json());
         const crypto = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd').then(res => res.json());
         const profile = await fetch('https://financialmodelingprep.com/api/v3/profile/AAPL?apikey=q3fPr5j0KtiOFVyZqv5AMmkrWeSKPDFi').then(res => res.json());
@@ -74,6 +91,8 @@ const LiveMarketDashboard: React.FC = () => {
         setCompanyProfile(profile[0]);
       } catch (error) {
         console.error("Error fetching market data:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -82,6 +101,11 @@ const LiveMarketDashboard: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%', typography: 'body1', bgcolor: 'background.paper', borderRadius: 2, boxShadow: 3 }}>
+      {loading && (
+        <div style={overlayStyle}>
+          <ClipLoader size={60} color="#fff" loading={loading} />
+        </div>
+      )}
      <Tabs
   value={tabIndex}
   onChange={handleTabChange}
